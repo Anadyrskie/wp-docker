@@ -1,0 +1,20 @@
+# Initial HTTP-only vhost for certificate issuance.
+# Replace association.org and 8081 before installing.
+<VirtualHost *:80>
+    ServerName association.org
+    ServerAlias www.association.org
+
+    ProxyRequests Off
+    ProxyPreserveHost On
+    ProxyAddHeaders On
+
+    ProxyPass        / http://127.0.0.1:8081/ connectiontimeout=5 timeout=120
+    ProxyPassReverse / http://127.0.0.1:8081/
+
+    # Do not trust a client-supplied forwarding scheme.
+    RequestHeader set X-Forwarded-Proto "http"
+    RequestHeader set X-Forwarded-Port "80"
+
+    ErrorLog ${APACHE_LOG_DIR}/association.org-error.log
+    CustomLog ${APACHE_LOG_DIR}/association.org-access.log combined
+</VirtualHost>

@@ -101,21 +101,18 @@ If PHP-FPM cannot open the MariaDB socket, inspect the host socket permissions a
 Each stack binds its inner Nginx only to localhost:
 
 ```text
-127.0.0.1:8081 -> container Nginx -> WordPress FPM
+association.org -> Apache :443 -> 127.0.0.1:8081 -> container Nginx -> WordPress FPM
 ```
 
-A minimal Apache HTTPS vhost proxy section is:
+The repository now includes complete Apache examples and installation instructions:
 
-```apache
-ProxyRequests Off
-ProxyPreserveHost On
-ProxyPass        / http://127.0.0.1:8081/ connectiontimeout=5 timeout=120
-ProxyPassReverse / http://127.0.0.1:8081/
-RequestHeader set X-Forwarded-Proto "https"
-RequestHeader set X-Forwarded-Port "443"
-```
+- `apache2/wordpress-site-http.conf.example`: initial HTTP vhost for certificate issuance
+- `apache2/wordpress-site-https.conf.example`: final HTTPS proxy and HTTP redirect
+- `apache2/README.md`: module setup, Certbot, testing, additional sites, and troubleshooting
 
 Keep the Compose port bound to `127.0.0.1`; do not expose the inner Nginx publicly unless that is intentional.
+
+The inner Nginx configuration denies PHP execution in writable upload/cache/upgrade directories **before** the general PHP regex handler. Keep that ordering intact.
 
 ## Backups
 

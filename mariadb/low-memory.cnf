@@ -1,0 +1,8 @@
+[mariadb]
+innodb_buffer_pool_size = 128M
+max_connections = 25
+table_open_cache = 256
+tmp_table_size = 16M
+max_heap_table_size = 16M
+performance_schema = OFF
+skip_name_resolve = ON

@@ -1,0 +1,45 @@
+# Final HTTPS vhost. Install only after the certificate exists.
+# Replace association.org, 8081, and certificate paths as needed.
+
+<VirtualHost *:80>
+    ServerName association.org
+    ServerAlias www.association.org
+
+    Redirect permanent / https://association.org/
+
+    ErrorLog ${APACHE_LOG_DIR}/association.org-error.log
+    CustomLog ${APACHE_LOG_DIR}/association.org-access.log combined
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+    ServerName association.org
+    ServerAlias www.association.org
+
+    SSLEngine On
+    SSLCertificateFile /etc/letsencrypt/live/association.org/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/association.org/privkey.pem
+
+    ProxyRequests Off
+    ProxyPreserveHost On
+    ProxyAddHeaders On
+
+    # The Compose port is bound to 127.0.0.1, so only this host proxy can
+    # reach the inner Nginx service.
+    ProxyPass        / http://127.0.0.1:8081/ connectiontimeout=5 timeout=120
+    ProxyPassReverse / http://127.0.0.1:8081/
+
+    # Overwrite, rather than append to, client-supplied forwarding headers.
+    RequestHeader set X-Forwarded-Proto "https"
+    RequestHeader set X-Forwarded-Port "443"
+
+    # Match the 64 MiB limits in Nginx/PHP.
+    LimitRequestBody 67108864
+
+    ErrorLog ${APACHE_LOG_DIR}/association.org-ssl-error.log
+    CustomLog ${APACHE_LOG_DIR}/association.org-ssl-access.log combined
+
+    # Enable only after confirming every subdomain/request should remain HTTPS.
+    # Header always set Strict-Transport-Security "max-age=31536000"
+</VirtualHost>
+</IfModule>
