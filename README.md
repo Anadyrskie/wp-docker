@@ -39,11 +39,23 @@ Do not run both modes against the same live WordPress volume at the same time.
 
 ## Initial setup: containerized MariaDB
 
+Create the environment interactively:
+
+```bash
+./setup.sh container --init-env
+# Review .env.container, then:
+./setup.sh container
+```
+
+Or create it manually and require it to exist:
+
 ```bash
 cp .env.container.example .env.container
 nano .env.container
-./setup.sh container
+./setup.sh container --require-env
 ```
+
+A normal interactive `./setup.sh container` also offers to create a missing environment file. Noninteractive runs fail when the file is missing. A newly generated environment file is never deployed immediately; the script exits so you can review it first.
 
 The first initialization creates the database and user from the secret files. Changing `DB_NAME`, `DB_USER`, or the secret after the `db_data` volume has already initialized does not rewrite existing MariaDB accounts automatically.
 
@@ -59,13 +71,23 @@ Useful commands:
 
 ## Initial setup: host MariaDB
 
-Install MariaDB Server and its client first, then:
+Install MariaDB Server and its client first. Then create the environment interactively:
+
+```bash
+./setup.sh host --init-env
+# Review .env.host, then:
+./setup.sh host
+```
+
+Or create it manually and require it to exist:
 
 ```bash
 cp .env.host.example .env.host
 nano .env.host
-./setup.sh host
+./setup.sh host --require-env
 ```
+
+A normal interactive `./setup.sh host` also offers to create a missing environment file. Noninteractive runs fail when the file is missing. The setup script parses the environment as `KEY=VALUE` data and does not source or execute it as Bash.
 
 On Debian/Ubuntu, the script normally administers MariaDB using `sudo mariadb` over the Unix socket. For password-authenticated database administration, set `MARIADB_ADMIN_DEFAULTS_FILE` before running the script.
 
@@ -95,6 +117,17 @@ Useful commands:
 ```
 
 If PHP-FPM cannot open the MariaDB socket, inspect the host socket permissions and AppArmor/SELinux policy. The host socket directory is mounted read-only into the WordPress container.
+
+
+## Environment-file safety
+
+The setup script never silently copies and deploys example defaults. Its behavior is:
+
+- `--init-env`: prompt for site-specific values, write the mode-specific environment file with permission `0600`, and exit.
+- `--require-env`: fail immediately if the environment file is absent.
+- No environment option: offer interactive creation only when attached to a terminal; fail in automation or other noninteractive shells.
+
+The required site-specific values are the Compose project name, localhost HTTP port, database name, database user, and WordPress table prefix. Each deployment must use a unique Compose project name, port, database, and database user.
 
 ## Host Apache reverse proxy
 
