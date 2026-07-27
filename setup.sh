@@ -347,6 +347,7 @@ valid_table_prefix "$WP_TABLE_PREFIX" || \
 
 mkdir -p secrets backups
 chmod 700 secrets backups
+chmod 0644 secrets/db_password.txt
 
 create_secret() {
   local path=$1
