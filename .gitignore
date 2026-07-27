@@ -1,0 +1,12 @@
+.env
+.env.host
+.env.container
+secrets/*
+!secrets/.gitkeep
+backups/*
+!backups/.gitkeep
+provider-export-*/
+*.sql
+*.sql.gz
+*.tar.gz
+.DS_Store
