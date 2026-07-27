@@ -11,13 +11,19 @@ services:
       WORDPRESS_DB_USER: ${DB_USER:-wordpress}
       WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
       WORDPRESS_TABLE_PREFIX: ${WP_TABLE_PREFIX:-wp_}
+      WORDPRESS_HOME: ${WP_HOME:?Set WP_HOME in the selected environment file}
+      WORDPRESS_SITEURL: ${WP_SITEURL:?Set WP_SITEURL in the selected environment file}
       DB_SOCKET: /run/mysqld/mysqld.sock
       WORDPRESS_CONFIG_EXTRA: |
+        $$docker_wp_home = rtrim( getenv_docker( 'WORDPRESS_HOME', '' ), '/' );
+        $$docker_wp_siteurl = rtrim( getenv_docker( 'WORDPRESS_SITEURL', $$docker_wp_home ), '/' );
+        define( 'WP_HOME', $$docker_wp_home );
+        define( 'WP_SITEURL', $$docker_wp_siteurl );
         define( 'WP_ENVIRONMENT_TYPE', 'production' );
         define( 'DISALLOW_FILE_EDIT', true );
         define( 'WP_MEMORY_LIMIT', '128M' );
         define( 'WP_MAX_MEMORY_LIMIT', '192M' );
-        define( 'FORCE_SSL_ADMIN', true );
+        define( 'FORCE_SSL_ADMIN', str_starts_with( $$docker_wp_home, 'https://' ) );
     secrets:
       - db_password
     volumes:
